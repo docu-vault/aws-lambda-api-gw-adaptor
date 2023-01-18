@@ -1,0 +1,72 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Parameters:
+  StageName:
+    Type: String
+    Default: dev
+    
+Resources:
+  listGroups:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./../src-ts/ 
+      Handler: adaptors/config/groups-handlers.getGroupsList
+      Runtime: nodejs14.x
+      MemorySize: 512
+      Timeout: 100
+      Layers:
+        - !ImportValue docudata-nodejs-common-libs-CommonLibsLayer
+        - !ImportValue docudata-baseplatform-applayer-BaseplatformApplicationLayer
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !ImportValue docudata-dynamodb:DocudataBasePlatformTable
+      Events:
+        GetAllItems:
+          Type: HttpApi
+          Properties:
+            Path: /api/internal/config/group/v1
+            Method: GET
+            CorsConfiguration:
+              AllowOrigins:
+                - "*"
+              AllowHeaders:
+                - "*"
+              AllowMethods:
+                - "*"
+              MaxAge: 600
+ 
+  createGroup:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./../src-ts/ 
+      Handler: adaptors/config/groups-handlers.createGroup
+      Runtime: nodejs14.x
+      MemorySize: 512
+      Timeout: 100
+      Layers:
+        - !ImportValue docudata-nodejs-common-libs-CommonLibsLayer
+        - !ImportValue docudata-baseplatform-applayer-BaseplatformApplicationLayer
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !ImportValue docudata-dynamodb:DocudataBasePlatformTable
+      Events:
+        api:
+          Type: HttpApi
+          Properties:
+            Path: /api/internal/config/group/v1/create
+            Method: POST
+            CorsConfiguration:
+              AllowOrigins:
+                - "*"
+              AllowHeaders:
+                - "*"
+              AllowMethods:
+                - "*"
+              MaxAge: 600
+
+Outputs:
+  HttpApiUrl:
+    Description: URL of your API endpoint
+    Value:
+      !Sub "https://${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com/api/internal/config/group/v1"
+      

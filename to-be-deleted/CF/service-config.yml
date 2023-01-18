@@ -1,0 +1,99 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Service Config Services
+  
+Globals:
+  Function:
+    Timeout: 10
+
+Parameters:
+  DBStackName:
+    Description: "DynamoDB database creation stack name"
+    Type: String
+    MinLength: 1
+    MaxLength: 255
+    AllowedPattern: ^[a-zA-Z][-a-zA-Z0-9]*$
+    Default: dynamodb
+
+Resources:
+  createServiceConfigFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./../src-ts/ 
+      Handler: adaptors/config/service-config-handler.createServiceConfig
+      Runtime: nodejs14.x
+      MemorySize: 512
+      Timeout: 100
+      Layers:
+        - !ImportValue docudata-nodejs-common-libs-CommonLibsLayer
+        - !ImportValue docudata-baseplatform-applayer-BaseplatformApplicationLayer
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !ImportValue docudata-dynamodb:DocudataBasePlatformTable
+      Events:
+        GetAllItems:
+          Type: HttpApi
+          Properties:
+            Path: /api/internal/config/sc/v1/create
+            Method: POST
+  
+  getServiceConfigFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./../src-ts/ 
+      Handler: adaptors/config/service-config-handler.getServiceConfig
+      Runtime: nodejs14.x
+      MemorySize: 512
+      Timeout: 100
+      Layers:
+        - !ImportValue docudata-nodejs-common-libs-CommonLibsLayer
+        - !ImportValue docudata-baseplatform-applayer-BaseplatformApplicationLayer
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !ImportValue docudata-dynamodb:DocudataBasePlatformTable
+      Events:
+        GetAllItems:
+          Type: HttpApi
+          Properties:
+            Path: /api/internal/config/sc/v1
+            Method: GET
+  
+  updateServiceConfigFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./../src-ts/ 
+      Handler: adaptors/config/service-config-handler.updateServiceConfig
+      Runtime: nodejs14.x
+      MemorySize: 512
+      Timeout: 100
+      Layers:
+        - !ImportValue docudata-nodejs-common-libs-CommonLibsLayer
+        - !ImportValue docudata-baseplatform-applayer-BaseplatformApplicationLayer
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !ImportValue docudata-dynamodb:DocudataBasePlatformTable
+      Events:
+        GetAllItems:
+          Type: HttpApi
+          Properties:
+            Path: /api/internal/config/group/v1/update/{id}
+            Method: POST
+  
+Outputs:
+  ApiEndpoint:
+    Description: "Base URL for Service Config related services"
+    Value: !Sub "https://${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com/api/internal/config/sc/v1"
+  
+  createServiceConfig:
+    Description: "Create Service Config ARN"
+    Value: !GetAtt createServiceConfigFunction.Arn
+
+  getServiceConfig:
+    Description: "getServiceConfig Function ARN"
+    Value: !GetAtt getServiceConfigFunction.Arn
+
+  updateServiceConfig:
+    Description: "updateServiceConfig Function ARN"
+    Value: !GetAtt updateServiceConfigFunction.Arn
+  

@@ -1,0 +1,166 @@
+
+AWSTemplateFormatVersion: 2010-09-09
+Transform: AWS::Serverless-2016-10-31
+Description: >-
+  Docudata Base Platform
+
+Parameters:
+  CommonLibrariesLayer:
+    Description: commeon nodejs libraries layer ARN to use 
+    Type: String
+  ApplicationDependenciesLayer:
+    Description: docudata application dependencies layer ARN
+    Type: String
+  DBTableName:
+    Type: String
+
+
+Resources:
+  # This is a Lambda function config associated with the source code: get-all-items.js
+  GetAllGroups:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: s3://dd-serverless/cicd/artifacts/functions-data
+      Handler: adaptors/config/groups-handlers.getGroupsList
+      Layers:
+        - !Ref CommonLibrariesLayer
+        - !Ref ApplicationDependenciesLayer
+      Runtime: nodejs14.x
+      MemorySize: 128
+      Timeout: 100
+      Description: A simple example includes a HTTP get method to get all items from a DynamoDB table.
+      Policies:
+        # Give Create/Read/Update/Delete Permissions to the base table
+        - DynamoDBCrudPolicy:
+            TableName: !Ref DBTableName
+      Environment:
+        Variables:
+          # Make table name accessible as environment variable from function code during execution
+          DOCUDATA_BASE_PLATFORM_TABLE: !Ref DBTableName
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /api/internal/config/group/v1
+            Method: GET
+          Cors:
+            AllowMethods: "'OPTIONS, GET'"
+            AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+            AllowOrigin: "'*'"
+
+  # This is a Lambda function config associated with the source code: get-by-id.js
+  GetGroupByIDFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: s3://dd-serverless/cicd/artifacts/functions-data
+      Handler: adaptors/config/groups-handlers.getGroup
+      Layers:
+        - !Ref CommonLibrariesLayer
+        - !Ref ApplicationDependenciesLayer
+      Runtime: nodejs14.x
+      MemorySize: 128
+      Timeout: 100
+      Description: A simple example includes a HTTP get method to get one item by id from a DynamoDB table.
+      Policies:
+        # Give Create/Read/Update/Delete Permissions to the SampleTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref DBTableName
+      Environment:
+        Variables:
+          # Make table name accessible as environment variable from function code during execution
+          DOCUDATA_BASE_PLATFORM_TABLE: !Ref DBTableName
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /api/internal/config/group/v1/{id}
+            Method: GET
+          Cors:
+            AllowMethods: "'OPTIONS, GET'"
+            AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+            AllowOrigin: "'*'"
+
+  # This is a Lambda function config associated with the source code: get-by-id.js
+  CreateGroupFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: s3://dd-serverless/cicd/artifacts/functions-data
+      Handler: adaptors/config/groups-handlers.createGroup
+      Layers:
+        - !Ref CommonLibrariesLayer
+        - !Ref ApplicationDependenciesLayer
+      Runtime: nodejs14.x
+      MemorySize: 128
+      Timeout: 100
+      Description: A simple example includes a HTTP get method to get one item by id from a DynamoDB table.
+      Policies:
+        # Give Create/Read/Update/Delete Permissions to the SampleTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref DBTableName
+      Environment:
+        Variables:
+          # Make table name accessible as environment variable from function code during execution
+          DOCUDATA_BASE_PLATFORM_TABLE: !Ref DBTableName
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /api/internal/config/group/v1/create
+            Method: POST
+          Cors:
+            AllowMethods: "'OPTIONS, POST'"
+            AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+            AllowOrigin: "'*'"
+
+  # Each Lambda function is defined by properties:
+  # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+
+  # This is a Lambda function config associated with the source code: put-item.js
+  UpdateGroupFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: s3://dd-serverless/cicd/artifacts/functions-data
+      Handler: adaptors/config/groups-handlers.updateGroup
+      Layers:
+        - !Ref CommonLibrariesLayer
+        - !Ref ApplicationDependenciesLayer
+      Runtime: nodejs14.x
+      MemorySize: 128
+      Timeout: 100
+      Description: A simple example includes a HTTP post method to add one item to a DynamoDB table.
+      Policies:
+        # Give Create/Read/Update/Delete Permissions to the SampleTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref DBTableName
+      Environment:
+        Variables:
+          # Make table name accessible as environment variable from function code during execution
+          DOCUDATA_BASE_PLATFORM_TABLE: !Ref DBTableName
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /api/internal/config/group/v1/update/{id}
+            Method: POST
+          Cors:
+            AllowMethods: "'OPTIONS, POST'"
+            AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+            AllowOrigin: "'*'"
+
+Outputs:  
+  listGroups:
+    Description: "GetAllGroups ARN"
+    Value: !GetAtt GetAllGroups.Arn
+
+  getGroupById:
+    Description: "getGroupByID Function ARN"
+    Value: !GetAtt GetGroupByIDFunction.Arn
+
+  createGroup:
+    Description: "createGroup Function ARN"
+    Value: !GetAtt CreateGroupFunction.Arn
+
+  updateGroup:
+    Description: "updateGroup Function ARN"
+    Value: !GetAtt UpdateGroupFunction.Arn
+  

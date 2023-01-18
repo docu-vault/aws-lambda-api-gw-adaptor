@@ -1,0 +1,81 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  Docudata Serverless Backend CICD main stack.
+
+Parameters:
+  AppName:
+    Description: Docudata backend serverless c
+    Type: String
+    Default: docudata-serverless-backend
+  DevAwsAccountId:
+    Description: AWS account ID for development account
+    Type: String
+    AllowedPattern: (\d{12}|^$)
+    ConstraintDescription: Must be an AWS account ID
+    Default: 856655754058
+  CurrentStage:
+    Description: Current Envronment. enum of DEV, QA, STAGING and PROD
+    Type: String
+    ConstraintDescription: Must be one of DEV, QA STAGING, PROD
+    Default: DEV
+  CommonLibLayer:
+    Description: commeon nodejs libraries layer ARN to use 
+    Type: String
+    Default: arn:aws:lambda:us-east-1:356531459747:layer:dd-common-nodejs-libs-1:1
+  ApplicationDependenciesLayer:
+    Description: docudata application dependencies layer ARN
+    Type: String
+    Default: arn:aws:lambda:us-east-1:356531459747:layer:docudata-dd-app-deps-001:6
+  DDS3BucketName:
+    AllowedPattern: "^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$"
+    ConstraintDescription: Docudata bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-).
+    Default:  dd-serverless
+    Description: S3 bucket name for the docudata assets. This string can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-)
+    Type: String
+  DDS3BucketRegion:
+    Description: 'The AWS Region where the Quick Start S3 bucket (QSS3BucketName) is hosted. When using your own bucket, you must specify this value.'
+    Type: String
+    Default: 'us-east-1'
+  DDS3KeyPrefix:
+    AllowedPattern: "^[0-9a-zA-Z-/]*$"
+    ConstraintDescription: Docudata  prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/). It cannot start with forward slash (/) because that is automatically appended.
+    Default: cicd
+    Description: S3 key prefix for the Docudta assets. AWS Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/). It cannot start with forward slash (/) because that is automatically appended. It will typically end with a forward slash.
+    Type: String
+  DynamoDBTableName:
+    Type: String
+    Default: 'testtable3'
+
+Conditions:
+  UsingDefaultBucket: !Equals [!Ref DDS3BucketName, 'dd-serverless']
+
+Resources:
+  DBStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      Parameters:
+        DBTableName: !Ref DynamoDBTableName
+      TemplateURL: !Sub 'https://${DDS3BucketName}.s3.${AWS::URLSuffix}/${DDS3KeyPrefix}/templates/dynamodb.template.yml'
+      TimeoutInMinutes: 60
+
+  GroupsAPIStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      Parameters:
+        DBTableName: !Ref DynamoDBTableName
+        CommonLibrariesLayer: !Ref CommonLibLayer
+        ApplicationDependenciesLayer: !Ref ApplicationDependenciesLayer
+      TemplateURL: !Sub 'https://${DDS3BucketName}.s3.${AWS::URLSuffix}/${DDS3KeyPrefix}/templates/groups.template.yml'
+      TimeoutInMinutes: 60
+  
+  
+#TemplateURL: https://dd-serverless.s3.amazonaws.com/cicd/dynamodb.template.yml
+Outputs:
+  DynamoDBTableName:
+    Value: !GetAtt
+      - DBStack
+      - Outputs.DynamoDBTableName
+  GroupsAPIBaseURL:
+    Value: !GetAtt
+      - GroupsAPIStack
+      - Outputs.listGroups

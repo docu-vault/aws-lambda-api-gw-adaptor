@@ -1,0 +1,44 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: DynamoDB Table Creation
+
+Parameters:
+  DBTableName:
+    Type: String
+    Default: testtable
+
+Resources:
+  
+  # DynamoDB table to store item: {id: &lt;ID&gt;, name: &lt;NAME&gt;}
+  DocudataBasePlatformTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Ref DBTableName
+      AttributeDefinitions: 
+      - AttributeName: bpPK
+        AttributeType: S
+      - AttributeName: bpSK
+        AttributeType: S
+      - AttributeName: gs1SK
+        AttributeType: S
+      KeySchema:
+      - AttributeName: bpPK
+        KeyType: "HASH"
+      - AttributeName: bpSK
+        KeyType: "RANGE"
+      BillingMode: PAY_PER_REQUEST
+
+      GlobalSecondaryIndexes:
+        - IndexName: "bpGS1"
+          KeySchema:
+            - AttributeName: "bpSK"
+              KeyType: "HASH"
+            - AttributeName: "gs1SK"
+              KeyType: "RANGE"
+          Projection:
+            ProjectionType: "ALL"
+
+Outputs:
+  DynamoDBTableName:
+    Value: !Ref DocudataBasePlatformTable
+    Export:
+      Name: !Join [ ":", [ !Ref "AWS::StackName", DocudataBasePlatformTable ] ]

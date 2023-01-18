@@ -1,0 +1,12 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description:
+  Docudata Application main template
+Resources:
+  DatabaseTables:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: db-template.yml
+  GroupsServices:
+    Type: AWS::Serverless::Application
+      Location: groups.yml

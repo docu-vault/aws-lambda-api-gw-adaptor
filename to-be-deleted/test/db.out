@@ -1,0 +1,71 @@
+
+> bp-config-core@0.0.1 createTable
+> aws dynamodb create-table --cli-input-json file://test/db-table.json --no-paginate
+
+{
+    "TableDescription": {
+        "AttributeDefinitions": [
+            {
+                "AttributeName": "bpPK",
+                "AttributeType": "S"
+            },
+            {
+                "AttributeName": "bpSK",
+                "AttributeType": "S"
+            },
+            {
+                "AttributeName": "gs1SK",
+                "AttributeType": "S"
+            }
+        ],
+        "TableName": "testtable",
+        "KeySchema": [
+            {
+                "AttributeName": "bpPK",
+                "KeyType": "HASH"
+            },
+            {
+                "AttributeName": "bpSK",
+                "KeyType": "RANGE"
+            }
+        ],
+        "TableStatus": "CREATING",
+        "CreationDateTime": "2021-06-27T03:42:52.041000-07:00",
+        "ProvisionedThroughput": {
+            "NumberOfDecreasesToday": 0,
+            "ReadCapacityUnits": 5,
+            "WriteCapacityUnits": 5
+        },
+        "TableSizeBytes": 0,
+        "ItemCount": 0,
+        "TableArn": "arn:aws:dynamodb:us-east-1:356531459747:table/testtable",
+        "TableId": "271d36f5-133a-482c-97fd-52ca9c6571dc",
+        "GlobalSecondaryIndexes": [
+            {
+                "IndexName": "bpGS1",
+                "KeySchema": [
+                    {
+                        "AttributeName": "bpSK",
+                        "KeyType": "HASH"
+                    },
+                    {
+                        "AttributeName": "gs1SK",
+                        "KeyType": "RANGE"
+                    }
+                ],
+                "Projection": {
+                    "ProjectionType": "ALL"
+                },
+                "IndexStatus": "CREATING",
+                "ProvisionedThroughput": {
+                    "NumberOfDecreasesToday": 0,
+                    "ReadCapacityUnits": 5,
+                    "WriteCapacityUnits": 5
+                },
+                "IndexSizeBytes": 0,
+                "ItemCount": 0,
+                "IndexArn": "arn:aws:dynamodb:us-east-1:356531459747:table/testtable/index/bpGS1"
+            }
+        ]
+    }
+}

@@ -1,0 +1,149 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Base Entities Configuration Services
+  
+Globals:
+  Function:
+    Timeout: 10
+
+Parameters:
+  DBStackName:
+    Description: "DynamoDB database creation stack name"
+    Type: String
+    MinLength: 1
+    MaxLength: 255
+    AllowedPattern: ^[a-zA-Z][-a-zA-Z0-9]*$
+    Default: dynamodb
+
+Resources:
+  GetBEConfigFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./../src-ts/ 
+      Handler: adaptors/config/entity-config-handler.getBusinessEntityConfig
+      Runtime: nodejs14.x
+      MemorySize: 512
+      Timeout: 100
+      Layers:
+        - !ImportValue docudata-nodejs-common-libs-CommonLibsLayer
+        - !ImportValue docudata-baseplatform-applayer-BaseplatformApplicationLayer
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !ImportValue docudata-dynamodb:DocudataBasePlatformTable
+      Events:
+        GetAllItems:
+          Type: HttpApi
+          Properties:
+            Path: /api/internal/config/ec/v1/beconfig
+            Method: GET
+
+  GetDocumentConfigFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./../src-ts/ 
+      Handler: adaptors/config/entity-config-handler.getDocumentConfig
+      Runtime: nodejs14.x
+      MemorySize: 512
+      Timeout: 100
+      Layers:
+        - !ImportValue docudata-nodejs-common-libs-CommonLibsLayer
+        - !ImportValue docudata-baseplatform-applayer-BaseplatformApplicationLayer
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !ImportValue docudata-dynamodb:DocudataBasePlatformTable
+      Events:
+        GetAllItems:
+          Type: HttpApi
+          Properties:
+            Path: /api/internal/config/ec/v1/docconfig
+            Method: GET
+   
+  getECByIDFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./../src-ts/ 
+      Handler: adaptors/config/entity-config-handler.getEntityConfig
+      Runtime: nodejs14.x
+      MemorySize: 512
+      Timeout: 100
+      Layers:
+        - !ImportValue docudata-nodejs-common-libs-CommonLibsLayer
+        - !ImportValue docudata-baseplatform-applayer-BaseplatformApplicationLayer
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !ImportValue docudata-dynamodb:DocudataBasePlatformTable
+      Events:
+        GetAllItems:
+          Type: HttpApi
+          Properties:
+            Path: /api/internal/config/ec/v1/{id}
+            Method: GET
+  
+  createEntityConfigFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./../src-ts/ 
+      Handler: adaptors/config/entity-config-handler.createEntityConfig
+      Runtime: nodejs14.x
+      MemorySize: 512
+      Timeout: 100
+      Layers:
+        - !ImportValue docudata-nodejs-common-libs-CommonLibsLayer
+        - !ImportValue docudata-baseplatform-applayer-BaseplatformApplicationLayer
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !ImportValue docudata-dynamodb:DocudataBasePlatformTable
+      Events:
+        GetAllItems:
+          Type: HttpApi
+          Properties:
+            Path: /api/internal/config/ec/v1/create
+            Method: POST
+  
+  updateEntityConfigFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./../src-ts/ 
+      Handler: adaptors/config/entity-config-handler.updateEntityConfig
+      Runtime: nodejs14.x
+      MemorySize: 512
+      Timeout: 100
+      Layers:
+        - !ImportValue docudata-nodejs-common-libs-CommonLibsLayer
+        - !ImportValue docudata-baseplatform-applayer-BaseplatformApplicationLayer
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !ImportValue docudata-dynamodb:DocudataBasePlatformTable
+      Events:
+        GetAllItems:
+          Type: HttpApi
+          Properties:
+            Path: /api/internal/config/ec/v1/update/{id}
+            Method: POST
+   
+Outputs:
+  ApiEndpoint:
+    Description: "Base URL for Entity Config APIs"
+    Value: !Sub "https://${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com/api/internal/config/ec/v1"
+  
+  getBEConfig:
+    Description: "GetBEConfig ARN"
+    Value: !GetAtt GetBEConfigFunction.Arn
+
+  getDocumentConfig:
+    Description: "getDocumentConfig ARN"
+    Value: !GetAtt GetDocumentConfigFunction.Arn
+
+  getECById:
+    Description: "getECByID Function ARN"
+    Value: !GetAtt getECByIDFunction.Arn
+
+  createEntityConfig:
+    Description: "createEntityConfig Function ARN"
+    Value: !GetAtt createEntityConfigFunction.Arn
+
+  updateEntityConfig:
+    Description: "updateEntityConfig Function ARN"
+    Value: !GetAtt updateEntityConfigFunction.Arn
+  
